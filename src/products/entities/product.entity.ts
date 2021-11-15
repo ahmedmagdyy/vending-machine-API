@@ -23,6 +23,9 @@ export class Product {
   @Column({ nullable: false })
   productName: string;
 
+  @Column({ nullable: false })
+  sellerId: string;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
