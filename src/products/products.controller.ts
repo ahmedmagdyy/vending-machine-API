@@ -41,4 +41,32 @@ export class ProductsController {
     }
     return res.status(HttpStatus.NOT_FOUND).json(result);
   }
+
+  @UseGuards(SellerGuard)
+  @Post('/products')
+  async createProduct(
+    @Body() createProductData: CreateProductDto,
+    @CurrentUser() user: IUser,
+  ): Promise<Product> {
+    return this.productsService.create(createProductData, user);
+  }
+
+  @UseGuards(SellerGuard)
+  @Delete('/products/:id')
+  async deleteProduct(
+    @Param('id') id: string,
+    @CurrentUser() user: IUser,
+  ): Promise<void> {
+    return this.productsService.delete(id, user);
+  }
+
+  @UseGuards(SellerGuard)
+  @Patch('/products/:id')
+  async updateProduct(
+    @Param('id') id: string,
+    @CurrentUser() user: IUser,
+    @Body() updateProductData: UpdateProductDto,
+  ): Promise<Product> {
+    return this.productsService.update(id, updateProductData, user);
+  }
 }
