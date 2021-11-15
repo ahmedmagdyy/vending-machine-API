@@ -6,11 +6,8 @@ import {
 } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 
-import { UsersService } from 'src/users/users.service';
-
 @Injectable()
-export class AuthGuard implements CanActivate {
-  constructor(private readonly userService: UsersService) {}
+export class SellerGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
     const token = request?.headers?.authorization?.split(' ')[1];
@@ -29,10 +26,10 @@ export class AuthGuard implements CanActivate {
     if (!user) {
       throw new UnauthorizedException('Invalid or expired token!');
     }
-    const userExists = await this.userService.findOne(user.sub);
 
-    if (!userExists) throw new UnauthorizedException('User not found');
-
+    if (user.role !== 'seller') {
+      throw new UnauthorizedException('You are not a seller!');
+    }
     return true;
   }
 }
