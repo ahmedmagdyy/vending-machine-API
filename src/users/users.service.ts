@@ -12,6 +12,7 @@ import { comparePassword } from './helpers/comparePassword';
 import { IUser } from 'src/interface/user.interface';
 import { UserDTO } from './dto/user.dto';
 import { IAuth } from 'src/interface/auth.interface';
+import { IResultAuth, IResultUser } from 'src/interface/result.interface';
 
 @Injectable()
 export class UsersService {
@@ -20,7 +21,7 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async signup(signUpUserCred: SignupDto): Promise<IAuth | { error; status }> {
+  async signup(signUpUserCred: SignupDto): Promise<IResultAuth> {
     const { password, role, username } = signUpUserCred;
 
     const userExists = await this.userRepository.find({
@@ -37,7 +38,6 @@ export class UsersService {
     const hashedPassword = await hashPassword(password);
 
     try {
-      console.log('test');
       const createdUser = await this.userRepository.create({
         username,
         password: hashedPassword,
@@ -46,9 +46,7 @@ export class UsersService {
             ? UserRoleEnum.BUYER
             : UserRoleEnum.SELLER,
       });
-      console.log(createdUser);
-      const savedUser = await this.userRepository.save(createdUser);
-      console.log({ savedUser });
+      await this.userRepository.save(createdUser);
 
       const tokenArg = {
         id: createdUser.id,
@@ -58,8 +56,11 @@ export class UsersService {
       const refreshToken = createRefreshToken(tokenArg);
 
       return {
-        accessToken,
-        refreshToken,
+        status: HttpStatus.OK,
+        data: {
+          accessToken,
+          refreshToken,
+        } as IAuth,
       };
     } catch (error) {
       return {
@@ -68,7 +69,8 @@ export class UsersService {
       };
     }
   }
-  async login(loginUserCred: LoginDTO): Promise<IAuth | { error; status }> {
+
+  async login(loginUserCred: LoginDTO): Promise<IResultAuth> {
     const { username, password } = loginUserCred;
 
     const users = await this.userRepository.find({
@@ -88,7 +90,7 @@ export class UsersService {
     if (!match) {
       return {
         error: 'Invalid credentials!',
-        status: HttpStatus.NOT_FOUND,
+        status: HttpStatus.BAD_REQUEST,
       };
     }
 
@@ -101,12 +103,15 @@ export class UsersService {
     const refreshToken = createRefreshToken(tokenArg);
 
     return {
-      accessToken,
-      refreshToken,
+      status: HttpStatus.OK,
+      data: {
+        accessToken,
+        refreshToken,
+      } as IAuth,
     };
   }
 
-  async rf(token: string): Promise<IAuth | { error; status }> {
+  async rf(token: string): Promise<IResultAuth> {
     if (!token) {
       return null;
     }
@@ -148,8 +153,11 @@ export class UsersService {
     const refreshToken = createRefreshToken(tokenArg);
 
     return {
-      accessToken,
-      refreshToken,
+      status: HttpStatus.OK,
+      data: {
+        accessToken,
+        refreshToken,
+      } as IAuth,
     };
   }
 
@@ -173,7 +181,11 @@ export class UsersService {
     }
   }
 
-  async update(id: string, username: string, user: IUser): Promise<UserDTO> {
+  async update(
+    id: string,
+    username: string,
+    user: IUser,
+  ): Promise<IResultUser> {
     try {
       const checkUsernameAvailability = await this.userRepository.find({
         where: {
@@ -194,10 +206,14 @@ export class UsersService {
         username,
       });
 
-      return this.userRepository.findOne(id);
+      const resultData = await this.userRepository.findOne(id);
+      return {
+        status: HttpStatus.OK,
+        data: resultData,
+      };
     } catch (error) {
       console.log(error);
+      return { status: HttpStatus.BAD_REQUEST, error: error.message };
     }
-    return this.userRepository.save({ id, ...user });
   }
 }
