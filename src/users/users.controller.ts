@@ -34,4 +34,29 @@ export class UsersController {
     }
     return res.status(400).json({ message: 'Signup failed' });
   }
+
+  @Post('/login')
+  async login(
+    @Body() loginUserCred: LoginDTO,
+    @Res() res: Response,
+  ): Promise<Response<any, Record<string, any>> | IAuth> {
+    console.log({ loginUserCred });
+    const result = await this.userService.login(loginUserCred);
+    if (result) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json({ message: 'Invalid username or password!' });
+  }
+
+  @Post('/rf')
+  async rf(
+    @Body() body: { token: string },
+    @Res() res: Response,
+  ): Promise<Response<any, Record<string, any>> | IAuth> {
+    const result = await this.userService.rf(body.token);
+    if (result) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json({ message: 'Invalid token' });
+  }
 }

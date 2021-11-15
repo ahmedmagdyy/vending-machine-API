@@ -68,4 +68,88 @@ export class UsersService {
       };
     }
   }
+  async login(loginUserCred: LoginDTO): Promise<IAuth | { error; status }> {
+    const { username, password } = loginUserCred;
+
+    const users = await this.userRepository.find({
+      username,
+    });
+    console.log({ users });
+
+    if (!users.length) {
+      return {
+        error: 'user not found!',
+        status: HttpStatus.NOT_FOUND,
+      };
+    }
+
+    const user = users[0];
+    const match = await comparePassword(password, user.password);
+    if (!match) {
+      return {
+        error: 'Invalid credentials!',
+        status: HttpStatus.NOT_FOUND,
+      };
+    }
+
+    const tokenArg = {
+      id: user.id,
+      role: user.role,
+    };
+
+    const accessToken = createAccessToken(tokenArg);
+    const refreshToken = createRefreshToken(tokenArg);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async rf(token: string): Promise<IAuth | { error; status }> {
+    if (!token) {
+      return null;
+    }
+
+    let payload = null;
+    try {
+      payload = jwt.verify(token, process.env.REFRESH_TOKEN_JWT_SECRET);
+    } catch (err) {
+      console.log(err);
+      return {
+        error: 'Invalid Token!',
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+
+    let user = null;
+    try {
+      user = await this.userRepository.findOne(payload.userId);
+    } catch (ex) {
+      return {
+        error: 'Failed Getting User Data!',
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+
+    if (!user) {
+      return {
+        error: 'User Not Found!',
+        status: HttpStatus.NOT_FOUND,
+      };
+    }
+
+    const tokenArg = {
+      id: user.id,
+      role: user.role,
+    };
+
+    const accessToken = createAccessToken(tokenArg);
+    const refreshToken = createRefreshToken(tokenArg);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
 }
