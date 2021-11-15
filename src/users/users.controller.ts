@@ -1,0 +1,37 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { SignupDto } from './dto/signup.dto';
+import { UsersService } from './users.service';
+import { Response } from 'express';
+import { LoginDTO } from './dto/login.dto';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { CurrentUser } from '../decorator/currentUser.decorator';
+import { IUser } from 'src/interface/user.interface';
+import { UserDTO } from './dto/user.dto';
+import { IAuth } from 'src/interface/auth.interface';
+
+@Controller('/')
+export class UsersController {
+  constructor(private readonly userService: UsersService) {}
+
+  @Post('/signup')
+  async signUp(
+    @Body() signUpUserCred: SignupDto,
+    @Res() res: Response,
+  ): Promise<Response<any, Record<string, any>> | IAuth> {
+    const result = await this.userService.signup(signUpUserCred);
+    if (result) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json({ message: 'Signup failed' });
+  }
+}
