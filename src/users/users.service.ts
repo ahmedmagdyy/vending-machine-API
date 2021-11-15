@@ -216,4 +216,30 @@ export class UsersService {
       return { status: HttpStatus.BAD_REQUEST, error: error.message };
     }
   }
+
+  async deposit(amount: number, user: IUser): Promise<IResultUser> {
+    try {
+      if (![5, 10, 20, 50, 100].includes(amount)) {
+        throw new Error(
+          'Invalid amount! you can only deposit 5, 10, 20, 50, 100',
+        );
+      }
+      const userExists = await this.userRepository.findOne({ id: user.id });
+
+      if (!userExists) {
+        throw new Error('User not found!');
+      }
+
+      userExists.deposit += amount;
+
+      const resultData = await this.userRepository.save(userExists);
+      return {
+        status: HttpStatus.OK,
+        data: resultData,
+      };
+    } catch (error) {
+      console.log(error);
+      return { status: HttpStatus.BAD_REQUEST, error: error.message };
+    }
+  }
 }

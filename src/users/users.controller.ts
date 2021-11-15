@@ -18,6 +18,8 @@ import { CurrentUser } from '../decorator/currentUser.decorator';
 import { IUser } from 'src/interface/user.interface';
 import { UserDTO } from './dto/user.dto';
 import { IAuth } from 'src/interface/auth.interface';
+import { BuyerGuard } from 'src/guards/buyer.guard';
+import { IResultAuth, IResultUser } from 'src/interface/result.interface';
 
 @Controller('/')
 export class UsersController {
@@ -28,11 +30,11 @@ export class UsersController {
     @Body() signUpUserCred: SignupDto,
     @Res() res: Response,
   ): Promise<Response<any, Record<string, any>> | IAuth> {
-    const result = await this.userService.signup(signUpUserCred);
-    if (result) {
-      return res.status(200).json(result);
+    const result: IResultAuth = await this.userService.signup(signUpUserCred);
+    if (result?.error) {
+      return res.status(result?.status).json({ error: result?.error });
     }
-    return res.status(400).json({ message: 'Signup failed' });
+    return res.status(result?.status).json(result?.data);
   }
 
   @Post('/login')
@@ -40,12 +42,11 @@ export class UsersController {
     @Body() loginUserCred: LoginDTO,
     @Res() res: Response,
   ): Promise<Response<any, Record<string, any>> | IAuth> {
-    console.log({ loginUserCred });
-    const result = await this.userService.login(loginUserCred);
-    if (result) {
-      return res.status(200).json(result);
+    const result: IResultAuth = await this.userService.login(loginUserCred);
+    if (result?.error) {
+      return res.status(result?.status).json({ error: result?.error });
     }
-    return res.status(400).json({ message: 'Invalid username or password!' });
+    return res.status(result?.status).json(result?.data);
   }
 
   @Post('/rf')
@@ -53,11 +54,11 @@ export class UsersController {
     @Body() body: { token: string },
     @Res() res: Response,
   ): Promise<Response<any, Record<string, any>> | IAuth> {
-    const result = await this.userService.rf(body.token);
-    if (result) {
-      return res.status(200).json(result);
+    const result: IResultAuth = await this.userService.rf(body.token);
+    if (result?.error) {
+      return res.status(result?.status).json({ error: result?.error });
     }
-    return res.status(400).json({ message: 'Invalid token' });
+    return res.status(result?.status).json(result?.data);
   }
 
   @UseGuards(AuthGuard)
@@ -87,7 +88,32 @@ export class UsersController {
     @Param('id') id: string,
     @CurrentUser() user: IUser,
     @Body('username') username: string,
-  ): Promise<UserDTO> {
-    return this.userService.update(id, username, user);
+    @Res() res: Response,
+  ): Promise<Response<any, Record<string, any>>> {
+    const updatedUser: IResultUser = await this.userService.update(
+      id,
+      username,
+      user,
+    );
+    if (!updatedUser?.error) {
+      return res
+        .status(updatedUser?.status)
+        .json({ error: updatedUser?.error });
+    }
+    return res.status(updatedUser?.status).json(updatedUser);
+  }
+
+  @UseGuards(BuyerGuard)
+  @Post('/deposit')
+  async deposit(
+    @Body('amount') amount: number,
+    @CurrentUser() user: IUser,
+    @Res() res: Response,
+  ): Promise<Response<any, Record<string, any>>> {
+    const userData: IResultUser = await this.userService.deposit(amount, user);
+    if (userData?.error) {
+      return res.status(userData?.status).json({ error: userData?.error });
+    }
+    return res.status(userData?.status).json(userData);
   }
 }
