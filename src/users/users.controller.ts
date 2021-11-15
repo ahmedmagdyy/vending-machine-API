@@ -59,4 +59,35 @@ export class UsersController {
     }
     return res.status(400).json({ message: 'Invalid token' });
   }
+
+  @UseGuards(AuthGuard)
+  @Get('/users')
+  async getUsers(): Promise<UserDTO[]> {
+    return this.userService.findAll();
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/users/:id')
+  async getUserById(@Param('id') id: string): Promise<UserDTO> {
+    return this.userService.findOne(id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('/users/:id')
+  async deleteUser(
+    @Param('id') id: string,
+    @CurrentUser() user: IUser,
+  ): Promise<void> {
+    return this.userService.remove(id, user);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/users/:id')
+  async updateUserUsername(
+    @Param('id') id: string,
+    @CurrentUser() user: IUser,
+    @Body('username') username: string,
+  ): Promise<UserDTO> {
+    return this.userService.update(id, username, user);
+  }
 }

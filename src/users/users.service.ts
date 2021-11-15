@@ -152,4 +152,52 @@ export class UsersService {
       refreshToken,
     };
   }
+
+  findAll(): Promise<UserDTO[]> {
+    return this.userRepository.find();
+  }
+
+  findOne(id: string): Promise<UserDTO> {
+    return this.userRepository.findOne(id);
+  }
+
+  async remove(id: string, user: IUser): Promise<void> {
+    try {
+      await this.userRepository.findOne(id);
+      if (id !== user.id) {
+        throw new Error('You are not authorized to delete this user!');
+      }
+      await this.userRepository.delete(id);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async update(id: string, username: string, user: IUser): Promise<UserDTO> {
+    try {
+      const checkUsernameAvailability = await this.userRepository.find({
+        where: {
+          username,
+          id: Not(id),
+        },
+      });
+
+      if (checkUsernameAvailability.length) {
+        throw new Error('Username is already taken!');
+      }
+
+      if (id !== user.id) {
+        throw new Error('You are not authorized to update this user!');
+      }
+
+      await this.userRepository.update(id, {
+        username,
+      });
+
+      return this.userRepository.findOne(id);
+    } catch (error) {
+      console.log(error);
+    }
+    return this.userRepository.save({ id, ...user });
+  }
 }
