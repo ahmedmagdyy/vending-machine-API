@@ -116,4 +116,17 @@ export class UsersController {
     }
     return res.status(userData?.status).json(userData);
   }
+
+  @UseGuards(BuyerGuard)
+  @Post('/reset')
+  async reset(
+    @CurrentUser() user: IUser,
+    @Res() res: Response,
+  ): Promise<Response<any, Record<string, any>>> {
+    const userData: IResultUser = await this.userService.reset(user);
+    if (userData?.error) {
+      return res.status(userData?.status).json({ error: userData?.error });
+    }
+    return res.status(userData?.status).json(userData);
+  }
 }

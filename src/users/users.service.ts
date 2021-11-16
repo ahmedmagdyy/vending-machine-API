@@ -242,4 +242,25 @@ export class UsersService {
       return { status: HttpStatus.BAD_REQUEST, error: error.message };
     }
   }
+
+  async reset(user: IUser): Promise<IResultUser> {
+    try {
+      const userExists = await this.userRepository.findOne({ id: user.id });
+
+      if (!userExists) {
+        throw new Error('User not found!');
+      }
+
+      userExists.deposit = 0;
+
+      const resultData = await this.userRepository.save(userExists);
+      return {
+        status: HttpStatus.OK,
+        data: resultData,
+      };
+    } catch (error) {
+      console.log(error);
+      return { status: HttpStatus.BAD_REQUEST, error: error.message };
+    }
+  }
 }
