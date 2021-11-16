@@ -13,8 +13,11 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { CurrentUser } from 'src/decorator/currentUser.decorator';
+import { BuyerGuard } from 'src/guards/buyer.guard';
 import { SellerGuard } from 'src/guards/seller.guard';
+import { IResultBuy } from 'src/interface/result.interface';
 import { IUser } from 'src/interface/user.interface';
+import { BuyProductDto } from './dto/buy-product.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
@@ -66,7 +69,35 @@ export class ProductsController {
     @Param('id') id: string,
     @CurrentUser() user: IUser,
     @Body() updateProductData: UpdateProductDto,
-  ): Promise<Product> {
-    return this.productsService.update(id, updateProductData, user);
+    @Res() res: Response,
+  ): Promise<Response<any, Record<string, any>>> {
+    const updatedProduct = await this.productsService.update(
+      id,
+      updateProductData,
+      user,
+    );
+    if (updatedProduct?.error) {
+      return res
+        .status(updatedProduct?.status)
+        .json({ error: updatedProduct?.error });
+    }
+    return res.status(updatedProduct?.status).json(updatedProduct?.data);
+  }
+
+  @UseGuards(BuyerGuard)
+  @Post('/buy')
+  async buyProduct(
+    @Body() buyProductInput: BuyProductDto,
+    @CurrentUser() user: IUser,
+    @Res() res: Response,
+  ): Promise<Response<any, Record<string, any>>> {
+    const buyResult: IResultBuy = await this.productsService.buy(
+      buyProductInput,
+      user,
+    );
+    if (buyResult?.error) {
+      return res.status(buyResult?.status).json({ error: buyResult?.error });
+    }
+    return res.status(buyResult?.status).json(buyResult?.data);
   }
 }

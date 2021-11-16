@@ -76,7 +76,6 @@ export class UsersService {
     const users = await this.userRepository.find({
       username,
     });
-    console.log({ users });
 
     if (!users.length) {
       return {
