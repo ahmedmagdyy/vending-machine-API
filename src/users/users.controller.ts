@@ -61,13 +61,11 @@ export class UsersController {
     return res.status(result?.status).json(result?.data);
   }
 
-  @UseGuards(AuthGuard)
   @Get('/users')
   async getUsers(): Promise<UserDTO[]> {
     return this.userService.findAll();
   }
 
-  @UseGuards(AuthGuard)
   @Get('/users/:id')
   async getUserById(@Param('id') id: string): Promise<UserDTO> {
     return this.userService.findOne(id);
@@ -95,12 +93,12 @@ export class UsersController {
       username,
       user,
     );
-    if (!updatedUser?.error) {
+    if (updatedUser?.error) {
       return res
         .status(updatedUser?.status)
         .json({ error: updatedUser?.error });
     }
-    return res.status(updatedUser?.status).json(updatedUser);
+    return res.status(updatedUser?.status).json(updatedUser?.data);
   }
 
   @UseGuards(BuyerGuard)
@@ -114,7 +112,7 @@ export class UsersController {
     if (userData?.error) {
       return res.status(userData?.status).json({ error: userData?.error });
     }
-    return res.status(userData?.status).json(userData);
+    return res.status(userData?.status).json(userData?.data);
   }
 
   @UseGuards(BuyerGuard)
@@ -127,6 +125,6 @@ export class UsersController {
     if (userData?.error) {
       return res.status(userData?.status).json({ error: userData?.error });
     }
-    return res.status(userData?.status).json(userData);
+    return res.status(userData?.status).json(userData?.data);
   }
 }
