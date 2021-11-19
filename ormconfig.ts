@@ -4,12 +4,16 @@ module.exports = {
   port: process.env.PG_PORT,
   username: process.env.PG_USERNAME,
   password: process.env.PG_PASSWORD,
-  database: process.env.PG_DATABASE_NAME,
+  database:
+    process.env.NODE_ENV === 'test'
+      ? 'vending_machine_test'
+      : process.env.PG_DATABASE_NAME,
+  // entities: [User, Product],
   entities: ['dist/**/*.entity{.ts,.js}'],
   // synchronize: true,
   migrationsTableName: 'db_migrations',
   migrations: ['migration/*.js'],
-  logging: true,
+  // logging: true,
   cli: {
     migrationsDir: 'migration',
   },

@@ -10,6 +10,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
+    "start:test": "NODE_ENV=test env-cmd -f .env nest start",
     "start:dev": "env-cmd -f .env nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -18,7 +19,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e": "NODE_ENV=test env-cmd -f .env jest --config ./test/jest-e2e.json",
+    "test:e2e:watch": "NODE_ENV=test env-cmd -f .env jest --config ./test/jest-e2e.json --watch",
+    "test:e2e-concurrent": "NODE_ENV=test env-cmd -f .env concurrently \"yarn migration:run\" \"yarn start:test\" \"sleep 5 && yarn test:e2e:watch\"",
     "migration:run": "typeorm migration:run",
     "migration:revert": "typeorm migration:revert",
     "migration:generate": "typeorm migration:generate -o",
@@ -32,13 +35,15 @@
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
+    "concurrently": "^6.4.0",
     "env-cmd": "^10.1.0",
     "jsonwebtoken": "^8.5.1",
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
-    "typeorm": "^0.2.40"
+    "typeorm": "^0.2.40",
+    "typeorm-extension": "^1.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
@@ -77,6 +82,9 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/../src/$1"
+    }
   }
 }
