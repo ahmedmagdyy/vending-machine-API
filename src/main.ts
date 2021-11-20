@@ -19,3 +19,4 @@ async function bootstrap() {
   );
 }
 bootstrap();
+process.on('SIGINT', () => process.exit(1));
