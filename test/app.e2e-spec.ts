@@ -30,6 +30,8 @@ describe('AppController (e2e)', () => {
     amountAvailable: 4,
   };
 
+  let at = null;
+
   beforeAll(async () => {
     await createConnections([
       {
@@ -62,13 +64,6 @@ describe('AppController (e2e)', () => {
     await defaultConnection.close();
   });
 
-  it('/users (GET) -> return empty array', async () => {
-    const result = await request(app).get('/users');
-
-    expect(result.status).toBe(200);
-    expect(result.body).toEqual([]);
-  });
-
   describe('/signup (POST)', () => {
     it('/signup (POST) -> Signup user return accesstoken', async () => {
       const result = await request(app).post('/signup').send({
@@ -82,6 +77,7 @@ describe('AppController (e2e)', () => {
         accessToken: expect.any(String),
         refreshToken: expect.any(String),
       });
+      at = result.body.accessToken;
     });
 
     it('/signup (POST) -> Signup failed username exists', async () => {
@@ -101,8 +97,9 @@ describe('AppController (e2e)', () => {
   describe('users (GET)', () => {
     let userId = null;
     it('/users (GET) -> returns all users', async () => {
-      const result = await request(app).get('/users');
-
+      const result = await request(app)
+        .get('/users')
+        .set('Authorization', `Bearer ${at}`);
       expect(result.status).toBe(200);
       expect(result.body).toHaveLength(1);
       expect(result.body[0]).toHaveProperty('id', expect.any(String));
@@ -113,7 +110,9 @@ describe('AppController (e2e)', () => {
     });
 
     it('/users/:id (GET) -> returns one user by id', async () => {
-      const result = await request(app).get(`/users/${userId}`);
+      const result = await request(app)
+        .get(`/users/${userId}`)
+        .set('Authorization', `Bearer ${at}`);
       expect(result.status).toBe(200);
       expect(result.body).toHaveProperty('id', userId);
       expect(result.body).toHaveProperty('deposit', 0);
@@ -193,7 +192,9 @@ describe('AppController (e2e)', () => {
     });
 
     it('/users (GET) -> returns all users', async () => {
-      const result = await request(app).get('/users');
+      const result = await request(app)
+        .get('/users')
+        .set('Authorization', `Bearer ${accessToken}`);
 
       expect(result.status).toBe(200);
       userId = result.body[0].id;
@@ -283,7 +284,9 @@ describe('AppController (e2e)', () => {
     });
 
     it('/users (GET) -> returns all users', async () => {
-      const result = await request(app).get('/users');
+      const result = await request(app)
+        .get('/users')
+        .set('Authorization', `Bearer ${accessToken}`);
 
       expect(result.status).toBe(200);
       userId = result.body[0].id;

@@ -61,11 +61,13 @@ export class UsersController {
     return res.status(result?.status).json(result?.data);
   }
 
+  @UseGuards(AuthGuard)
   @Get('/users')
   async getUsers(): Promise<UserDTO[]> {
     return this.userService.findAll();
   }
 
+  @UseGuards(AuthGuard)
   @Get('/users/:id')
   async getUserById(
     @Param('id') id: string,

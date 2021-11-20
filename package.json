@@ -21,7 +21,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "NODE_ENV=test env-cmd -f .env jest --config ./test/jest-e2e.json",
     "test:e2e:watch": "NODE_ENV=test env-cmd -f .env jest --config ./test/jest-e2e.json app.e2e-spec.ts --watch",
-    "test:e2e-concurrent": "NODE_ENV=test env-cmd -f .env concurrently \"yarn migration:run\" \"yarn start:test\" \"sleep 5 && yarn test:e2e:watch\"",
+    "test:e2e-concurrent": "NODE_ENV=test env-cmd -f .env concurrently \"yarn migration:run\" \"yarn start:test\" \"sleep 2 && yarn test:e2e:watch\"",
     "migration:run": "typeorm migration:run",
     "migration:revert": "typeorm migration:revert",
     "migration:generate": "typeorm migration:generate -o",
