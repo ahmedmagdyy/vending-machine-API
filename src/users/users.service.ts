@@ -164,8 +164,18 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  findOne(id: string): Promise<UserDTO> {
-    return this.userRepository.findOne(id);
+  async findOne(id: string): Promise<IResultUser> {
+    const userFound = await this.userRepository.findOne(id);
+    if (!userFound) {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        error: 'User Not Found!',
+      };
+    }
+    return {
+      status: HttpStatus.OK,
+      data: userFound,
+    };
   }
 
   async remove(id: string, user: IUser): Promise<void> {

@@ -67,8 +67,15 @@ export class UsersController {
   }
 
   @Get('/users/:id')
-  async getUserById(@Param('id') id: string): Promise<UserDTO> {
-    return this.userService.findOne(id);
+  async getUserById(
+    @Param('id') id: string,
+    @Res() res: Response,
+  ): Promise<Response<any, Record<string, any>> | IResultUser> {
+    const data = await this.userService.findOne(id);
+    if (data?.error) {
+      return res.status(data?.status).json({ error: data?.error });
+    }
+    return res.status(data?.status).json(data?.data);
   }
 
   @UseGuards(AuthGuard)
