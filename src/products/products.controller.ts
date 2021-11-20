@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpStatus,
   Param,
   Patch,
   Post,
@@ -40,9 +39,9 @@ export class ProductsController {
   ): Promise<Response<any, Record<string, any>>> {
     const result = await this.productsService.findOne(id);
     if (Object.keys(result).length > 1) {
-      return res.status(HttpStatus.OK).json(result);
+      return res.status(result?.status).json({ error: result?.error });
     }
-    return res.status(HttpStatus.NOT_FOUND).json(result);
+    return res.status(result?.status).json(result?.data);
   }
 
   @UseGuards(SellerGuard)

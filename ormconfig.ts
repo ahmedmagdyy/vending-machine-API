@@ -6,7 +6,7 @@ module.exports = {
   password: process.env.PG_PASSWORD,
   database:
     process.env.NODE_ENV === 'test'
-      ? 'vending_machine_test'
+      ? process.env.PG_DATABASE_NAME_TEST
       : process.env.PG_DATABASE_NAME,
   // entities: [User, Product],
   entities: ['dist/**/*.entity{.ts,.js}'],
