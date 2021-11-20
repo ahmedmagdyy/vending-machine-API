@@ -38,7 +38,7 @@ export class ProductsController {
     @Res() res: Response,
   ): Promise<Response<any, Record<string, any>>> {
     const result = await this.productsService.findOne(id);
-    if (Object.keys(result).length > 1) {
+    if (Object.keys(result).includes('error')) {
       return res.status(result?.status).json({ error: result?.error });
     }
     return res.status(result?.status).json(result?.data);
